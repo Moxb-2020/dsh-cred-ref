@@ -1,0 +1,47 @@
+{
+  "name": "@hyll/dsh-cred-ref",
+  "version": "1.0.1",
+  "description": "Credential reference for DeepSeek Harness: aliases resolve to local credentials inside the Host process; plaintext passwords never enter the conversation.",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "author": "hyll",
+  "icon": "./icon.svg",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "credentials",
+    "ssh",
+    "telnet"
+  ],
+  "exports": {
+    ".": "./src/index.js",
+    "./client": "./client.js",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "src/",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/",
+    "docs/",
+    "icon.svg"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-connection",
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-plugin-manager"
+      ]
+    }
+  }
+}

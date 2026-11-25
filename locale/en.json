@@ -1,0 +1,7 @@
+{
+  "meta": {
+    "title": "Credential reference",
+    "description": "Resolves credential aliases inside the Host process. Passwords stay in a local chmod-600 YAML file; the model only sees aliases and command output, and a guard denies any tool call that touches the credentials path.",
+    "detail": "docs/DETAIL.md"
+  }
+}

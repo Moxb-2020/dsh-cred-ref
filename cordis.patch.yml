@@ -1,0 +1,17 @@
+# dsh-cred-ref: 凭据引用插件。
+#
+# 单一插件行。凭据存本地 YAML（默认 ~/.dsh/creds/servers.yaml，chmod 600），
+# 模型只见别名与命令输出；guard 拒绝任何触碰凭据路径的工具调用。
+#
+# 配置字段（未知键忽略，缺省值在 src/index.js 的 resolveSettings 里）：
+#   credsPath    凭据文件绝对路径，支持 ~ 前缀
+#   guard        是否启用路径硬拒绝（默认 true）
+#   timeoutMs    单次远程执行超时（默认 60000）
+#   maxOutputBytes 单路输出上限（默认 65536）
+- insert:
+    - id: dsh-cred-ref
+      name: ./src/index.js
+      config:
+        credsPath: ~/.dsh/creds/servers.yaml
+        guard: true
+        timeoutMs: 60000

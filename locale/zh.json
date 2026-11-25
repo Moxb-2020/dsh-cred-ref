@@ -1,0 +1,7 @@
+{
+  "meta": {
+    "title": "凭据引用",
+    "description": "在宿主进程内按别名解析凭据。口令只存在本地 chmod 600 的 YAML 文件里，模型只能看到别名与命令输出；guard 会拒绝任何触碰凭据路径的工具调用。",
+    "detail": "docs/DETAIL.md"
+  }
+}
