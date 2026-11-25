@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 820" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">
+<rect width="1240" height="820" fill="#F3F4F6"/>
+<rect x="20" y="20" width="760" height="780" rx="14" fill="#FFFFFF" stroke="#E5E7EB"/>
+<text x="44" y="52" font-size="15" fill="#6B7280">DSH 对话 · 效果示意（设计稿）</text>
+<rect x="392" y="72" width="360" height="46" rx="10" fill="#2563EB"/>
+<text x="572" y="101" font-size="15" fill="#FFFFFF" text-anchor="middle">连 server1 执行 df -h</text>
+<rect x="48" y="142" width="640" height="128" rx="10" fill="#F8FAFC" stroke="#CBD5E1"/>
+<rect x="64" y="158" width="18" height="18" rx="4" fill="#16A34A"/>
+<text x="92" y="172" font-size="15" font-weight="600" fill="#0F172A" font-family="Menlo, monospace">cred_exec</text>
+<rect x="196" y="156" width="196" height="22" rx="11" fill="#DCFCE7"/>
+<text x="294" y="171" font-size="12" fill="#166534" text-anchor="middle">宿主执行 · 口令零暴露</text>
+<text x="64" y="204" font-size="14" fill="#334155" font-family="Menlo, monospace">{ "alias": "server1",</text>
+<text x="64" y="228" font-size="14" fill="#334155" font-family="Menlo, monospace">  "command": "df -h" }</text>
+<text x="64" y="254" font-size="12" fill="#94A3B8">模型只发出别名与命令 —— 没有主机、用户名、口令</text>
+<rect x="48" y="290" width="640" height="168" rx="10" fill="#0F172A"/>
+<text x="64" y="316" font-size="12" fill="#64748B">工具结果 · 仅回传 stdout</text>
+<text x="64" y="344" font-size="13" fill="#E2E8F0" font-family="Menlo, monospace" xml:space="preserve">Filesystem      Size  Used Avail Use% Mounted on</text>
+<text x="64" y="368" font-size="13" fill="#E2E8F0" font-family="Menlo, monospace" xml:space="preserve">/dev/sda1        98G   41G   52G  45% /</text>
+<text x="64" y="392" font-size="13" fill="#E2E8F0" font-family="Menlo, monospace" xml:space="preserve">/dev/sdb1       492G  210G  257G  45% /data</text>
+<text x="64" y="424" font-size="12" fill="#4ADE80" font-family="Menlo, monospace">exit 0 · 0.8s</text>
+<rect x="48" y="478" width="640" height="86" rx="10" fill="#FFFFFF" stroke="#E5E7EB"/>
+<text x="64" y="508" font-size="15" fill="#111827">server1 磁盘正常：系统盘用了 45%，数据盘 45%，</text>
+<text x="64" y="534" font-size="15" fill="#111827">无需清理。要不要顺手看下 switch-a 的端口状态？</text>
+<rect x="48" y="592" width="704" height="180" rx="10" fill="#FEF2F2" stroke="#FCA5A5" stroke-dasharray="6 4"/>
+<text x="68" y="622" font-size="14" font-weight="600" fill="#B91C1C">口令去哪了？</text>
+<text x="68" y="650" font-size="13" fill="#7F1D1D">① 明文只存在 ~/.dsh/creds/servers.yaml（chmod 600）</text>
+<text x="68" y="676" font-size="13" fill="#7F1D1D">② 宿主插件读文件 → SSHPASS 环境变量 → ssh，不进命令行</text>
+<text x="68" y="702" font-size="13" fill="#7F1D1D">③ 对话、系统提示词、服务端日志里：只有别名和输出</text>
+<text x="68" y="728" font-size="13" fill="#7F1D1D">④ 模型想 bash/read 凭据文件 → tools.guard() 硬拒绝</text>
+<text x="68" y="754" font-size="12" fill="#B91C1C">边界：防不住用户自己往对话里粘贴口令</text>
+<rect x="800" y="20" width="420" height="780" rx="14" fill="#FFFFFF" stroke="#E5E7EB"/>
+<text x="824" y="52" font-size="15" font-weight="600" fill="#111827">插件配置 · dsh-cred-ref</text>
+<text x="824" y="88" font-size="13" fill="#6B7280">凭据文件路径</text>
+<rect x="824" y="98" width="372" height="38" rx="8" fill="#F9FAFB" stroke="#D1D5DB"/>
+<text x="836" y="122" font-size="13" fill="#111827" font-family="Menlo, monospace">~/.dsh/creds/servers.yaml</text>
+<rect x="824" y="150" width="110" height="24" rx="12" fill="#DCFCE7"/>
+<text x="879" y="166" font-size="12" fill="#166534" text-anchor="middle">权限 600 ✓</text>
+<rect x="944" y="150" width="130" height="24" rx="12" fill="#DBEAFE"/>
+<text x="1009" y="166" font-size="12" fill="#1E40AF" text-anchor="middle">改动自动热重载</text>
+<text x="824" y="212" font-size="13" fill="#6B7280">凭据清单（口令永远掩码）</text>
+<rect x="824" y="224" width="372" height="32" fill="#F3F4F6"/>
+<text x="836" y="245" font-size="12" fill="#6B7280">别名</text>
+<text x="920" y="245" font-size="12" fill="#6B7280">主机</text>
+<text x="1030" y="245" font-size="12" fill="#6B7280">用户</text>
+<text x="1150" y="245" font-size="12" fill="#6B7280">口令</text>
+<rect x="824" y="256" width="372" height="44" fill="#FFFFFF" stroke="#E5E7EB"/>
+<text x="836" y="283" font-size="13" fill="#111827" font-family="Menlo, monospace">server1</text>
+<text x="920" y="283" font-size="12" fill="#374151" font-family="Menlo, monospace">192.0.2.10</text>
+<text x="1030" y="283" font-size="12" fill="#374151">root</text>
+<text x="1150" y="283" font-size="12" fill="#9CA3AF">••••••</text>
+<rect x="824" y="300" width="372" height="44" fill="#FFFFFF" stroke="#E5E7EB"/>
+<text x="836" y="327" font-size="13" fill="#111827" font-family="Menlo, monospace">switch-a</text>
+<text x="920" y="327" font-size="12" fill="#374151" font-family="Menlo, monospace">192.0.2.2</text>
+<text x="1030" y="327" font-size="12" fill="#374151">admin</text>
+<text x="1150" y="327" font-size="12" fill="#9CA3AF">••••••</text>
+<rect x="824" y="344" width="372" height="44" fill="#FFFFFF" stroke="#E5E7EB"/>
+<text x="836" y="371" font-size="13" fill="#111827" font-family="Menlo, monospace">win-test</text>
+<text x="920" y="371" font-size="12" fill="#374151" font-family="Menlo, monospace">192.0.2.30</text>
+<text x="1030" y="371" font-size="12" fill="#374151">administrator</text>
+<text x="1150" y="371" font-size="12" fill="#9CA3AF">••••••</text>
+<rect x="824" y="412" width="120" height="36" rx="8" fill="#2563EB"/>
+<text x="884" y="435" font-size="13" fill="#FFFFFF" text-anchor="middle">+ 添加凭据</text>
+<text x="824" y="486" font-size="12" fill="#9CA3AF">写入走原子锁；UI 与日志永不显示明文</text>
+<rect x="824" y="520" width="372" height="252" rx="10" fill="#F8FAFC" stroke="#E2E8F0"/>
+<text x="844" y="550" font-size="14" font-weight="600" fill="#0F172A">模型得到的两个工具</text>
+<text x="844" y="580" font-size="13" fill="#334155" font-family="Menlo, monospace">cred_exec(alias, command)</text>
+<text x="844" y="602" font-size="12" fill="#64748B">按别名执行远程命令，只回传输出</text>
+<text x="844" y="634" font-size="13" fill="#334155" font-family="Menlo, monospace">cred_list()</text>
+<text x="844" y="656" font-size="12" fill="#64748B">列出别名+主机+用户（无口令）</text>
+<text x="844" y="692" font-size="13" fill="#334155" font-family="Menlo, monospace">tools.guard()</text>
+<text x="844" y="714" font-size="12" fill="#64748B">任何工具调用触碰凭据路径 → 拒绝</text>
+<text x="844" y="750" font-size="12" fill="#94A3B8">支持 ssh / telnet / PowerShell Remoting</text>
+</svg>

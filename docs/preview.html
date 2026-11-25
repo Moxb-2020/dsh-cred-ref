@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dsh-cred-ref · Plan B 效果与流程</title>
+<style>
+  :root{
+    --bg:#F3F4F6; --card:#FFFFFF; --line:#E5E7EB; --ink:#111827; --muted:#6B7280;
+    --blue:#2563EB; --green:#16A34A; --red:#B91C1C;
+    --mono:"SF Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font:14px/1.6 "PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;padding:28px}
+  .wrap{max-width:1280px;margin:0 auto}
+  h1{font-size:20px;margin-bottom:6px}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:22px}
+  h2{font-size:16px;margin:30px 0 12px}
+  .panels{display:flex;gap:20px;align-items:stretch}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px}
+  .chat{flex:1 1 760px;min-width:0}
+  .settings{flex:0 0 420px}
+  .panel-title{color:var(--muted);font-size:14px;margin-bottom:18px}
+  .settings .panel-title{color:var(--ink);font-weight:600;font-size:15px}
+  .user-bubble{margin-left:auto;width:fit-content;max-width:80%;background:var(--blue);color:#fff;border-radius:10px;padding:11px 22px;font-size:15px;margin-bottom:20px}
+  .tool-card{background:#F8FAFC;border:1px solid #CBD5E1;border-radius:10px;padding:16px;margin-bottom:18px}
+  .tool-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .tool-dot{width:18px;height:18px;border-radius:4px;background:var(--green)}
+  .tool-name{font-family:var(--mono);font-weight:600;font-size:15px}
+  .badge{border-radius:11px;padding:3px 12px;font-size:12px}
+  .badge.green{background:#DCFCE7;color:#166534}
+  .badge.blue{background:#DBEAFE;color:#1E40AF}
+  .tool-card pre{font-family:var(--mono);font-size:14px;color:#334155;line-height:1.7}
+  .tool-note{color:#94A3B8;font-size:12px;margin-top:8px}
+  .terminal{background:#0F172A;border-radius:10px;padding:16px;margin-bottom:18px}
+  .terminal .t-head{color:#64748B;font-size:12px;margin-bottom:10px}
+  .terminal pre{font-family:var(--mono);font-size:13px;color:#E2E8F0;line-height:1.85}
+  .terminal .t-exit{color:#4ADE80;font-family:var(--mono);font-size:12px;margin-top:10px}
+  .answer{border:1px solid var(--line);border-radius:10px;padding:14px 16px;font-size:15px;margin-bottom:18px}
+  .warn{background:#FEF2F2;border:1px dashed #FCA5A5;border-radius:10px;padding:16px 20px}
+  .warn h3{color:var(--red);font-size:14px;margin-bottom:8px}
+  .warn p{color:#7F1D1D;font-size:13px;line-height:2}
+  .warn .edge{color:var(--red);font-size:12px;margin-top:6px}
+  .field-label{color:var(--muted);font-size:13px;margin-bottom:6px}
+  .input{background:#F9FAFB;border:1px solid #D1D5DB;border-radius:8px;padding:9px 12px;font-family:var(--mono);font-size:13px;margin-bottom:14px}
+  .badges{display:flex;gap:10px;margin-bottom:22px}
+  table{width:100%;border-collapse:collapse;margin-bottom:18px}
+  th{background:#F3F4F6;color:var(--muted);font-size:12px;font-weight:400;text-align:left;padding:8px 10px}
+  td{border:1px solid var(--line);font-size:12px;padding:12px 10px;color:#374151}
+  td.alias{font-family:var(--mono);font-size:13px;color:var(--ink)}
+  td.host{font-family:var(--mono)}
+  td.mask{color:#9CA3AF;letter-spacing:2px}
+  .btn{background:var(--blue);color:#fff;border:none;border-radius:8px;padding:9px 20px;font-size:13px;cursor:pointer}
+  .fine{color:#9CA3AF;font-size:12px;margin:12px 0 22px}
+  .tools-card{background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:18px 20px}
+  .tools-card h3{font-size:14px;margin-bottom:12px}
+  .tools-card .t{font-family:var(--mono);font-size:13px;color:#334155;margin-top:12px}
+  .tools-card .d{color:#64748B;font-size:12px}
+  .tools-card .sup{color:#94A3B8;font-size:12px;margin-top:14px}
+  .flow-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
+  .flow-card svg{width:100%;height:auto;display:block}
+  .legend{display:flex;gap:18px;font-size:12px;color:var(--muted);margin-top:10px}
+  .legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>DSH 凭据引用插件 dsh-cred-ref · Plan B</h1>
+  <div class="sub">效果示意（设计稿，非真实截图）＋ 机制流程图 · HTML 渲染版</div>
+
+  <h2>一、最终效果</h2>
+  <div class="panels">
+    <div class="panel chat">
+      <div class="panel-title">DSH 对话</div>
+      <div class="user-bubble">连 server1 执行 df -h</div>
+      <div class="tool-card">
+        <div class="tool-head">
+          <span class="tool-dot"></span>
+          <span class="tool-name">cred_exec</span>
+          <span class="badge green">宿主执行 · 口令零暴露</span>
+        </div>
+        <pre>{ "alias": "server1",
+  "command": "df -h" }</pre>
+        <div class="tool-note">模型只发出别名与命令 —— 没有主机、用户名、口令</div>
+      </div>
+      <div class="terminal">
+        <div class="t-head">工具结果 · 仅回传 stdout</div>
+        <pre>Filesystem      Size  Used Avail Use% Mounted on
+/dev/sda1        98G   41G   52G  45% /
+/dev/sdb1       492G  210G  257G  45% /data</pre>
+        <div class="t-exit">exit 0 · 0.8s</div>
+      </div>
+      <div class="answer">server1 磁盘正常：系统盘用了 45%，数据盘 45%，无需清理。要不要顺手看下 switch-a 的端口状态？</div>
+      <div class="warn">
+        <h3>口令去哪了？</h3>
+        <p>① 明文只存在 ~/.dsh/creds/servers.yaml（chmod 600）<br>
+           ② 宿主插件读文件 → SSHPASS 环境变量 → ssh，不进命令行<br>
+           ③ 对话、系统提示词、服务端日志里：只有别名和输出<br>
+           ④ 模型想 bash/read 凭据文件 → tools.guard() 硬拒绝</p>
+        <div class="edge">边界：防不住用户自己往对话里粘贴口令</div>
+      </div>
+    </div>
+
+    <div class="panel settings">
+      <div class="panel-title">插件配置 · dsh-cred-ref</div>
+      <div class="field-label">凭据文件路径</div>
+      <div class="input">~/.dsh/creds/servers.yaml</div>
+      <div class="badges">
+        <span class="badge green">权限 600 ✓</span>
+        <span class="badge blue">改动自动热重载</span>
+      </div>
+      <div class="field-label">凭据清单（口令永远掩码）</div>
+      <table>
+        <tr><th>别名</th><th>主机</th><th>用户</th><th>口令</th></tr>
+        <tr><td class="alias">server1</td><td class="host">192.0.2.10</td><td>root</td><td class="mask">••••••</td></tr>
+        <tr><td class="alias">switch-a</td><td class="host">192.0.2.2</td><td>admin</td><td class="mask">••••••</td></tr>
+        <tr><td class="alias">win-test</td><td class="host">192.0.2.30</td><td>administrator</td><td class="mask">••••••</td></tr>
+      </table>
+      <button class="btn">+ 添加凭据</button>
+      <div class="fine">写入走原子锁；UI 与日志永不显示明文</div>
+      <div class="tools-card">
+        <h3>模型得到的两个工具</h3>
+        <div class="t">cred_exec(alias, command)</div>
+        <div class="d">按别名执行远程命令，只回传输出</div>
+        <div class="t">cred_list()</div>
+        <div class="d">列出别名+主机+用户（无口令）</div>
+        <div class="t">tools.guard()</div>
+        <div class="d">任何工具调用触碰凭据路径 → 拒绝</div>
+        <div class="sup">支持 ssh / telnet / PowerShell Remoting</div>
+      </div>
+    </div>
+  </div>
+
+  <h2>二、机制流程</h2>
+  <div class="flow-card">
+    <svg viewBox="0 0 1240 880" xmlns="http://www.w3.org/2000/svg" font-family="PingFang SC, Hiragino Sans GB, sans-serif" font-size="14">
+      <defs>
+        <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#333"/></marker>
+        <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#B85450"/></marker>
+      </defs>
+      <!-- edges -->
+      <g stroke="#333" stroke-width="1.5">
+        <line x1="610" y1="96" x2="610" y2="146" marker-end="url(#ar)"/>
+        <line x1="610" y1="214" x2="610" y2="276" marker-end="url(#ar)"/>
+        <line x1="610" y1="344" x2="610" y2="406" marker-end="url(#ar)"/>
+        <line x1="610" y1="474" x2="610" y2="536" marker-end="url(#ar)"/>
+        <line x1="610" y1="596" x2="610" y2="646" marker-end="url(#ar)"/>
+        <line x1="610" y1="714" x2="610" y2="776" marker-end="url(#ar)"/>
+        <line x1="810" y1="312" x2="876" y2="312" stroke-dasharray="6 4" marker-end="url(#ar)"/>
+      </g>
+      <g stroke="#B85450" stroke-width="1.5">
+        <line x1="410" y1="182" x2="354" y2="182" stroke-dasharray="6 4" marker-end="url(#arr)"/>
+        <line x1="190" y1="214" x2="190" y2="276" marker-end="url(#arr)"/>
+      </g>
+      <text x="843" y="302" font-size="12" fill="#333" text-anchor="middle">读取</text>
+      <text x="382" y="172" font-size="12" fill="#B85450" text-anchor="middle">旁路</text>
+      <text x="202" y="250" font-size="12" fill="#B85450">deny</text>
+      <!-- nodes -->
+      <g>
+        <rect x="410" y="40" width="400" height="56" rx="6" fill="#DAE8FC" stroke="#6C8EBF"/>
+        <text x="610" y="73" text-anchor="middle" fill="#111">用户：连 server1 执行 df -h（只说别名）</text>
+        <rect x="410" y="150" width="400" height="64" rx="6" fill="#DAE8FC" stroke="#6C8EBF"/>
+        <text x="610" y="187" text-anchor="middle" fill="#111">模型调用 cred_exec(alias=server1, command=df -h)</text>
+        <rect x="410" y="280" width="400" height="64" rx="6" fill="#D5E8D4" stroke="#82B366"/>
+        <text x="610" y="317" text-anchor="middle" fill="#111">宿主插件解析别名 → 主机 / 用户 / 口令</text>
+        <rect x="410" y="410" width="400" height="64" rx="6" fill="#D5E8D4" stroke="#82B366"/>
+        <text x="610" y="447" text-anchor="middle" fill="#111">spawn ssh：口令走 SSHPASS 环境变量，不进命令行</text>
+        <rect x="410" y="540" width="400" height="56" rx="6" fill="#F5F5F5" stroke="#666"/>
+        <text x="610" y="573" text-anchor="middle" fill="#111">远端服务器执行 df -h</text>
+        <rect x="410" y="650" width="400" height="64" rx="6" fill="#D5E8D4" stroke="#82B366"/>
+        <text x="610" y="687" text-anchor="middle" fill="#111">仅 stdout 作为工具结果返回，明文不进模型上下文</text>
+        <rect x="410" y="780" width="400" height="56" rx="6" fill="#DAE8FC" stroke="#6C8EBF"/>
+        <text x="610" y="813" text-anchor="middle" fill="#111">模型回答：磁盘使用率报告</text>
+        <rect x="880" y="280" width="300" height="64" rx="6" fill="#FFF2CC" stroke="#D6B656"/>
+        <text x="1030" y="307" text-anchor="middle" fill="#111" font-size="13">~/.dsh/creds/servers.yaml</text>
+        <text x="1030" y="327" text-anchor="middle" fill="#111" font-size="13">（chmod 600，仅本地）</text>
+        <rect x="30" y="150" width="320" height="64" rx="6" fill="#F8CECC" stroke="#B85450"/>
+        <text x="190" y="187" text-anchor="middle" fill="#111">旁路尝试：bash / read 直读凭据文件</text>
+        <rect x="30" y="280" width="320" height="64" rx="6" fill="#F8CECC" stroke="#B85450"/>
+        <text x="190" y="307" text-anchor="middle" fill="#111" font-size="13">tools.guard() 硬拒绝：</text>
+        <text x="190" y="327" text-anchor="middle" fill="#111" font-size="13">命中凭据路径一律 deny</text>
+        <rect x="880" y="650" width="300" height="64" rx="6" fill="#F5F5F5" stroke="#666"/>
+        <text x="1030" y="677" text-anchor="middle" fill="#111" font-size="13">cred_list：返回别名+主机清单</text>
+        <text x="1030" y="697" text-anchor="middle" fill="#111" font-size="13">（无口令）</text>
+      </g>
+    </svg>
+    <div class="legend">
+      <span><i style="background:#DAE8FC;border:1px solid #6C8EBF"></i>模型可见</span>
+      <span><i style="background:#D5E8D4;border:1px solid #82B366"></i>宿主执行</span>
+      <span><i style="background:#F8CECC;border:1px solid #B85450"></i>硬拒绝</span>
+      <span><i style="background:#FFF2CC;border:1px solid #D6B656"></i>本地凭据文件</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

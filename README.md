@@ -2,6 +2,18 @@
 
 DeepSeek Harness 凭据引用插件：对话里只说**别名**，宿主进程解析本地凭据并远程执行（ssh / telnet），明文口令永不进入对话、系统提示词或服务端日志。附带插件配置页的凭据管理 UI（添加/编辑/删除，口令永远掩码）。
 
+## 效果预览
+
+机制流程（含 guard 硬拒绝分支）：
+
+![机制流程](docs/images/flow.png)
+
+最终效果示意（对话 + 配置页，设计稿）：
+
+![效果示意](docs/images/mockup.png)
+
+可交互 HTML 版（浏览器直接打开）：[docs/preview.html](docs/preview.html)；矢量源：[docs/images/mockup.svg](docs/images/mockup.svg)。
+
 ## 能力
 
 - `cred_exec(alias, command)`：按别名远程执行，只回传 stdout/stderr/退出码/耗时
