@@ -524,7 +524,10 @@ function listView(settings) {
 
 const ALIAS_RE = /^[A-Za-z0-9][A-Za-z0-9._-]*$/
 
-/** 新增或更新一条凭据。password 为空且别名已存在 = 保留原口令。 */
+/**
+ * 新增或更新一条凭据。password 为空且目标已存在 = 保留原口令。
+ * payload.renameFrom 指定时做受控重命名：原别名条目改名，口令留空保留原值。
+ */
 function upsertCred(settings, input) {
   const raw = input ?? {}
   const alias = typeof raw.alias === 'string' ? raw.alias.trim() : ''
@@ -539,13 +542,23 @@ function upsertCred(settings, input) {
   if (!KINDS.has(kind)) throw new Error('kind 仅支持 ssh|telnet')
   const password = typeof raw.password === 'string' ? raw.password : ''
   const enable = typeof raw.enable === 'string' ? raw.enable : ''
+  const renameFrom = typeof raw.renameFrom === 'string' && raw.renameFrom.length > 0 ? raw.renameFrom : undefined
 
   const { map, header } = readMapOrEmpty(settings)
-  const existing = map.get(alias)
+
+  let existing
+  if (renameFrom !== undefined && renameFrom !== alias) {
+    if (map.has(alias)) throw new Error(`别名 "${alias}" 已被占用，重命名失败`)
+    existing = map.get(renameFrom)
+    if (existing === undefined) throw new Error(`重命名来源 "${renameFrom}" 不存在`)
+    map.delete(renameFrom)
+  } else {
+    existing = map.get(alias)
+  }
   if (existing === undefined && password.length === 0) throw new Error('新凭据必须填写口令')
   const entry = {
     host, port, user, kind,
-    password: password.length > 0 ? password : existing.password,
+    password: password.length > 0 ? password : existing?.password ?? '',
     ...(enable.length > 0 ? { enable } : {})
   }
   map.set(alias, entry)

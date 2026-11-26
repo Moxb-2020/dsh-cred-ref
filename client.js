@@ -113,7 +113,8 @@ window.__ModuleLoader__.load({
         try {
           const res = await rpc.call(CHANNEL, 'upsert', {
             alias: form.alias, host: form.host, port: form.port, user: form.user,
-            password: form.password, enable: form.enable, kind: form.kind
+            password: form.password, enable: form.enable, kind: form.kind,
+            ...(form.mode === 'edit' ? { renameFrom: form.originalAlias } : {})
           })
           if (res.ok) { setForm(null); await refresh() } else setError(res.error.message)
         } catch (e) { setError(String(e && e.message ? e.message : e)) }
@@ -129,7 +130,7 @@ window.__ModuleLoader__.load({
         setBusy(false)
       }
 
-      const openEdit = (e) => setForm({ mode: 'edit', alias: e.alias, host: e.host, port: String(e.port), user: e.user, password: '', enable: '', kind: e.kind })
+      const openEdit = (e) => setForm({ mode: 'edit', alias: e.alias, originalAlias: e.alias, host: e.host, port: String(e.port), user: e.user, password: '', enable: '', kind: e.kind })
 
       const field = (labelKey, key, extra) => h('label', { style: S.label, key },
         t(labelKey),
@@ -168,7 +169,7 @@ window.__ModuleLoader__.load({
         form === null
           ? h('div', null, h('button', { style: S.btnPrimary, onClick: () => setForm({ mode: 'add', ...EMPTY_FORM }), disabled: busy }, t('add')))
           : h('div', { style: S.form },
-            field('alias', 'alias', { placeholder: 'server1', disabled: form.mode === 'edit' }),
+            field('alias', 'alias', { placeholder: 'server1' }),
             field('host', 'host', { placeholder: '192.0.2.10' }),
             field('port', 'port', { type: 'number', min: 1, max: 65535 }),
             field('user', 'user', { placeholder: 'root' }),

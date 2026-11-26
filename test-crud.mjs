@@ -79,6 +79,19 @@ const u4 = await h2("getUi", {})
 ok(u4.value.sidebarPanel === false, "ui corrupt fail-closed")
 ok(!existsSync(settings.credsPath + ".ui.json.tmp-" + process.pid), "no tmp leftover")
 
+// 11. 受控重命名：改名保留口令、目标占用拒绝、来源缺失拒绝、别名不变视为普通编辑
+upsertCred(settings, { alias: "alpha", host: "10.0.0.1", user: "root", password: "orig-pw", kind: "ssh" })
+upsertCred(settings, { alias: "beta", host: "10.0.0.2", user: "root", password: "beta-pw", kind: "ssh" })
+upsertCred(settings, { alias: "renamed", host: "10.0.0.9", user: "root", password: "", renameFrom: "alpha" })
+const m3 = parseCredsYaml(readFileSync(settings.credsPath, "utf8"))
+ok(!m3.has("alpha") && m3.has("renamed"), "rename removes old alias")
+ok(m3.get("renamed").password === "orig-pw", "rename keeps password when blank")
+try { upsertCred(settings, { alias: "beta", host: "h", user: "u", password: "", renameFrom: "renamed" }); ok(false, "rename to occupied rejected") } catch { ok(true, "rename to occupied rejected") }
+try { upsertCred(settings, { alias: "gamma", host: "h", user: "u", password: "p", renameFrom: "nope" }); ok(false, "rename from missing rejected") } catch { ok(true, "rename from missing rejected") }
+upsertCred(settings, { alias: "renamed", host: "10.0.0.9", user: "admin", password: "", renameFrom: "renamed" })
+const m4 = parseCredsYaml(readFileSync(settings.credsPath, "utf8"))
+ok(m4.get("renamed").user === "admin" && m4.get("renamed").password === "orig-pw", "same-alias renameFrom = plain edit")
+
 rmSync(dir, { recursive: true, force: true })
 console.log(`CRUD tests: ${pass} pass / ${fail} fail`)
 process.exit(fail > 0 ? 1 : 0)
