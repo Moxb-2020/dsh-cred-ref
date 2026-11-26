@@ -464,11 +464,40 @@ function serializeCreds(map, header) {
 }
 
 /** 原子写：临时文件 600 → rename。 */
-function atomicWriteCreds(settings, text) {
-  const tmp = settings.credsPath + '.tmp-' + process.pid
+function atomicWrite(path, text) {
+  const tmp = path + '.tmp-' + process.pid
   writeFileSync(tmp, text, { mode: 0o600 })
-  renameSync(tmp, settings.credsPath)
-  chmodSync(settings.credsPath, 0o600)
+  renameSync(tmp, path)
+  chmodSync(path, 0o600)
+}
+
+/** 凭据库原子写（沿用 600）。 */
+function atomicWriteCreds(settings, text) {
+  atomicWrite(settings.credsPath, text)
+}
+
+/* ---------- UI 开关状态（侧边栏面板；与凭据同目录、同原子写纪律） ---------- */
+
+/** 状态文件路径：凭据文件旁挂 .ui.json。 */
+function uiStatePath(settings) {
+  return settings.credsPath + '.ui.json'
+}
+
+/** 读开关状态；缺失/损坏一律视为关（fail-closed）。 */
+function readUiState(settings) {
+  try {
+    const parsed = JSON.parse(readFileSync(uiStatePath(settings), 'utf8'))
+    return { sidebarPanel: parsed?.sidebarPanel === true }
+  } catch {
+    return { sidebarPanel: false }
+  }
+}
+
+/** 写开关状态（原子写 + 600），返回落盘后的状态。 */
+function writeUiState(settings, input) {
+  const next = { sidebarPanel: input?.sidebarPanel === true }
+  atomicWrite(uiStatePath(settings), JSON.stringify(next, null, 2) + '\n')
+  return readUiState(settings)
 }
 
 /** 读取现有 map；文件不存在时返回空 map 与空头部。 */
@@ -541,6 +570,8 @@ function makeRpcHandler(settings) {
       if (endpoint === 'list') return { ok: true, value: listView(settings) }
       if (endpoint === 'upsert') return { ok: true, value: upsertCred(settings, payload) }
       if (endpoint === 'delete') return { ok: true, value: deleteCred(settings, payload) }
+      if (endpoint === 'getUi') return { ok: true, value: readUiState(settings) }
+      if (endpoint === 'setUi') return { ok: true, value: writeUiState(settings, payload) }
       return { ok: false, error: { code: 'cred-ref/unknown-endpoint', message: 'unknown endpoint: ' + endpoint, details: {} } }
     } catch (error) {
       return { ok: false, error: { code: 'cred-ref/error', message: error instanceof Error ? error.message : String(error), details: {} } }
@@ -631,4 +662,4 @@ const apply = Object.assign(run, { inject: ['tools'] })
 export default apply
 
 // 内部纯函数导出（供冒烟测试；不参与插件运行时契约）。
-export { expandHome, parseCredsYaml, resolveSettings, hitsCredsPath, cap, unquote, execSsh, execTelnet, listView, upsertCred, deleteCred, makeRpcHandler, serializeCreds }
+export { expandHome, parseCredsYaml, resolveSettings, hitsCredsPath, cap, unquote, execSsh, execTelnet, listView, upsertCred, deleteCred, makeRpcHandler, serializeCreds, readUiState, writeUiState, uiStatePath }

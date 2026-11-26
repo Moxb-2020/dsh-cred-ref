@@ -1,6 +1,6 @@
 // CRUD + RPC handler 单元测试（临时凭据文件，工作区内）
 import { resolveSettings, listView, upsertCred, deleteCred, makeRpcHandler, parseCredsYaml } from "./src/index.js"
-import { readFileSync, statSync, mkdtempSync, rmSync } from "node:fs"
+import { readFileSync, statSync, mkdtempSync, rmSync, writeFileSync, existsSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
@@ -62,6 +62,22 @@ ok(r5.ok === false && r5.error.message.length > 0, "rpc validation failure shape
 const text = readFileSync(settings.credsPath, "utf8")
 upsertCred(settings, { alias: "delta", host: "h", user: "u", password: "p" })
 ok(readFileSync(settings.credsPath, "utf8").startsWith(text.split("\n")[0]), "header preserved")
+
+// 10. UI 开关状态：默认关、往返、损坏 fail-closed、600、原子
+const h2 = makeRpcHandler(settings)
+const u0 = await h2("getUi", {})
+ok(u0.ok === true && u0.value.sidebarPanel === false, "ui default off")
+const u1 = await h2("setUi", { sidebarPanel: true })
+ok(u1.ok === true && u1.value.sidebarPanel === true, "ui set on")
+ok((statSync(settings.credsPath + ".ui.json").mode & 0o777) === 0o600, "ui state mode 600")
+const u2 = await h2("getUi", {})
+ok(u2.value.sidebarPanel === true, "ui persisted on")
+const u3 = await h2("setUi", { sidebarPanel: false })
+ok(u3.value.sidebarPanel === false, "ui set off")
+writeFileSync(settings.credsPath + ".ui.json", "{broken")
+const u4 = await h2("getUi", {})
+ok(u4.value.sidebarPanel === false, "ui corrupt fail-closed")
+ok(!existsSync(settings.credsPath + ".ui.json.tmp-" + process.pid), "no tmp leftover")
 
 rmSync(dir, { recursive: true, force: true })
 console.log(`CRUD tests: ${pass} pass / ${fail} fail`)
